@@ -1,17 +1,29 @@
 from flask import Flask
-from app.extensions import db
-from app.routes.auth_routes import auth
-from app.routes.routes import api
+from app.models.mongo_setup import global_init
+from dotenv import load_dotenv
+import os
+from flask_restx import Api, Resource
+
 
 
 def create_app():
+    load_dotenv()
     app = Flask(__name__)
 
     app.config.from_object('app.config')
 
-    db.init_app(app)
+    global_init()
 
+    api = Api(app,
+            title = 'studysync',
+            version = '1.0',
+            description = 'A all in one learning platform to manage all of your learning resources'
+    )
+
+    
     # Register blueprints
+    from app.routes.auth_routes import auth
+    from app.routes.routes import api
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(api, url_prefix='/api')
 
