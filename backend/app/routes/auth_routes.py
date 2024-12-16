@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, session, make_response
+from flask import Blueprint, jsonify, request, session, make_response, redirect, url_for
 from app.models.user import User
 from mongoengine.errors import NotUniqueError
 from app.utils.jwt_helper import generate_jwt
@@ -6,7 +6,7 @@ from app.utils.token_validation import token_required
 
 auth = Blueprint('auth', __name__)
 
-@auth.route('/register', methods=['POST', 'GET'])
+@auth.route('/register', methods=['POST'])
 def register_user():
     try:
         # get the data from the request body
@@ -30,31 +30,37 @@ def register_user():
         return jsonify({'message': str(e)}), 500
 
 
-@auth.route('/login', methods=['POST'])
+@auth.route('/login', methods=['POST', 'GET'])
 def login():
-    try:
-        data = request.get_json()
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
 
-        email = data.get('email')
-        password = data.get('password')
+            email = data.get('email')
+            password = data.get('password')
 
-        if not email or not password:
-            return jsonify({'message': 'Email and Password are required'}), 400
-        
-        user = User.objects(email=email).first()
-        if not user or not user.verify_password(password):
-            return jsonify({'message': 'invalid Email or Password'}), 401
-        
-        # generate JWT
-        token = generate_jwt(str(user.id))
-        
-        return jsonify({
+            if not email or not password:
+                return jsonify({'message': 'Email and Password are required'}), 400
+            
+            user = User.objects(email=email).first()
+            if not user or not user.verify_password(password):
+                return jsonify({'message': 'invalid Email or Password'}), 401
+            
+            # generate JWT
+            token = generate_jwt(str(user.id))
+            
+            return jsonify({
             'message': 'Login successful',
             'token': token,
-            'user': {'id': str(user.id), 'username': user.username}
-        }); 200
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
+            'user': {
+                'id': str(user.id),
+                'username': user.username
+            }
+        }), 200
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
+    return f'not the right method used'
+
 
 token_blacklist = set()
 
