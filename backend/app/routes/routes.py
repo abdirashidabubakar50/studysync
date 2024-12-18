@@ -92,3 +92,17 @@ def add_module(decoded_payload, course_id):
             'updated_at': course.updated_at
         }
     }), 201
+
+
+@api.route('/courses/<course_id>')
+@token_required
+def delete_course(decoded_payload, course_id):
+    """ Delete the course by its ID"""
+    user_id = decoded_payload['user_id']
+    course = Course.objects(id=course_id, created_by=user_id).first()
+
+    if not course:
+        return jsonify({'message': 'Course not found'})
+    
+    course.delete_course()
+    return jsonify({'message': 'Course deleted successfuly'})

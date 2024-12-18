@@ -18,7 +18,7 @@ def register_user():
 
 
         if not username or not email or not password:
-            return jsonify({'message': 'All fileds (username, email and password) are required'})
+            return jsonify({'message': 'All fileds (username, email and password) are required'}), 409
 
         user = User(username=username, email=email, password_hash=User.hash_password(password))
         user.save()

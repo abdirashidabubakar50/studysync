@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from app.models.mongo_setup import global_init
 from dotenv import load_dotenv
 import os
@@ -20,7 +21,7 @@ def create_app():
             description = 'A all in one learning platform to manage all of your learning resources'
     )
 
-    
+    CORS(app)
     # Register blueprints
     from app.routes.auth_routes import auth
     from app.routes.routes import api
