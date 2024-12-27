@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from "../assets/logo.png";
+import logo from "../assets/logo-dark.png";
 import study from "../assets/study.png";
 import { loginUser } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,10 @@ const Login = () => {
 
     try {
       const response = await loginUser(formData);
-      localStorage.setItem("token", response.data.token);
+      const {token, user} = response.data
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("username", user.username );
       navigate('/dashboard');
     } catch (error) {
       setError(error.response?.data?.message || 'Login Failed');
