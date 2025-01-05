@@ -3,11 +3,11 @@ import datetime
 from app.models.user import User
 import  uuid
 
-class Assignment(db.EmbeddedDocument):
-    id = db.StringField(required=True, default=lambda: str(uuid.uuid4()))
+class Assignment(db.Document):
     title = db.StringField(required=True, max_length=100)
     description = db.StringField()
     status = db.StringField(choices=['pending', 'completed'], defalut='pending')
+    due_date = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
