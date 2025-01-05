@@ -182,8 +182,6 @@ const SideBar = () => {
   );
 }
 
-<<<<<<< HEAD
 export default SideBar
-=======
-export default SideBar
->>>>>>> f29589d (recovering files)
+
+
