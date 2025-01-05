@@ -6,7 +6,7 @@ from app.models.assignment import Assignment
 
 
 class Course(db.Document):
-    title = db.StringField(required=True, unique=True, max_length=100)
+    title = db.StringField(required=True, max_length=100)
     description = db.StringField()
     created_by = db.ReferenceField('User', required=True, reverse_delete_rule=db.CASCADE)
     modules = db.ListField(db.EmbeddedDocumentField(Module))
@@ -59,15 +59,23 @@ class Course(db.Document):
         if self.modules:
             total_modules = len(self.modules)
             completed_modules = sum(1 for m in self.modules if m.status == 'completed')
-            assignment_progress = (completed_modules / total_modules)
+            module_progress = (completed_modules / total_modules) * 100
         
-        assignment_progress = 0
-        if  self.assignmemts:
-            total_assigments = len(self.assignments)
-            completed_modules = sum(1 for a in self.assignment  if a.status == 'completed')
-            assignment_progress = (completed_assignments / total_assignments)
+        return module_progress
+
+    def mark_module_completed(self, module_id):
+        module = next((m for m in self.modules if str(m.id) == module_id), None)
+        if not module:
+            raise ValueError(f"No module found with ID {module_id}")
         
-        if self.modules and self.assignments:
-            return (module_progress + assignment_progress) / 2
-        return module_progress or assignment_progress
-                              
+        module.mark_completed()
+        self.save()
+        return self.calculate_progress()
+
+    @staticmethod
+    def calculate_overall_progress(courses):
+        if not courses:
+            return 0  # No courses means no progress
+
+        total_progress = sum(course.calculate_progress() for course in courses)
+        return total_progress / len(courses)  # Average progress
