@@ -1,9 +1,15 @@
-from flask import Blueprint, jsonify, redirect, request
+from flask import Blueprint, jsonify, redirect, request, send_from_directory
 from app.utils.token_validation import token_required
 from app.models.user import User
 from app.models.course import Course
 from app.models.assignment import Assignment
 from app.models.module import Module
+from app.models.material import Material
+import os
+from werkzeug.utils import secure_filename
+import datetime
+from app.config import Config
+from flask_cors import cross_origin
 
 api = Blueprint('api', __name__)
 
@@ -11,6 +17,32 @@ api = Blueprint('api', __name__)
 @api.route('/', methods=['GET'])
 def home():
     return jsonify({'message': 'Welcome to studysync'})
+
+
+
+@api.route('/profile/user_id', methods=['GET'])
+@token_required
+def update_profile(decoded_payload):
+    """ update the user profile """
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+    if not user:
+        return jsonify({"message": 'User not found'}), 404
+    
+    data = request.get_json()
+
+    username = data.get('username')
+    email = data.get('email')
+
+
+    user.update(username=username, email=email)
+    user.save()
+
+    return jsonify({
+        'username': user.username,
+        'email': user.email,
+    });
+
 
 
 @api.route('/dashboard', methods=['GET'])
@@ -43,6 +75,7 @@ def get_courses(decoded_payload):
                 'id': str(course.id),
                 'title': course.title,
                 'description': course.description,
+                'progress': course.calculate_progress(),
                 'created_at': course.created_at,
                 'updated-at': course.updated_at
             } for course in courses
@@ -99,6 +132,7 @@ def view_course_details(decoded_payload, course_id):
             'title': module.title,
             'description': module.description,
             'created_at': module.created_at,
+            'materials': [material.to_dict() for material in module.materials]
         }
         for module in course.modules
     ]
@@ -113,6 +147,23 @@ def view_course_details(decoded_payload, course_id):
         'modules': modules
     }), 200
 
+
+@api.route('/courses/overall_progress', methods=['GET'])
+@token_required
+def calculate_overall_progress(decoded_payload):
+    user_id = decoded_payload['user_id']
+    user_courses = Course.objects(created_by=user_id)
+
+    if not user_courses:
+        return jsonify({"message": "No courses found for this user", "overall_progress": 0}), 200
+
+    # Calculate overall progress
+    overall_progress = Course.calculate_overall_progress(user_courses)
+    
+    return jsonify({
+        "message": "Overall progress calculated successfully",
+        "overall_progress": overall_progress
+    }), 200
 
 @api.route('/courses/<course_id>/modules', methods=['POST'])
 @token_required
@@ -217,115 +268,140 @@ def delete_module(decoded_payload, course_id, module_id):
         }
     }), 200
 
-
-@api.route('/modules/<module_id>/assignments', methods=['POST'])
+@api.route('/courses/<course_id>/modules/<module_id>', methods=['OPTIONS', 'POST'])
 @token_required
-def add_assignment(decoded_payload, module_id):
-    data = request.get_json()
-    title = data.get('title')
-    description = data.get('description', '')
-    status = data.get('status', 'pending')
+def mark_module_completed(decoded_payload, course_id, module_id):
+    if request.method == 'OPTIONS':
+        response = jsonify({'message': 'CORS preflight successful'})
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5174/')
+        response.headers.add('Access-Control-Allow-Methods', 'OPTIONS, POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response, 200
 
-    if not title:
-        return jsonify({"message": "Title is  required"})
-
-    course = Course.objects(modules__match={"id": module_id}).first()
-
-    module = next((mod for mod in course.modules if str(mod.id) == module_id), None)
-    if not module:
-        return jsonify({"message": "Module  not found"}), 404
-
-    assignment = Assignment(
-        title=title,
-        description=description,
-        status=status
-    )
-    module.assigments.append(assignment)
-    course.save()
-
-    return jsonify({
-        "Message": "Assignment added successfully",
-        "assignment": {
-            "id": str(assignment.id),
-            "title": assignment.title,
-            "description": assignment.description,
-            "status": assignment.status
-        }
-    }), 201
-
-
-@api.route('/modules/<module_id>/', methods=['GET'])
-@token_required
-def get_assignment(decoded_payload, module_id):
-    course = Course.objects(modules__match={"id": module_id}).first()
+    course = Course.objects(id=course_id).first()
     if not course:
-        return jsonify({"message": "course nott found"}), 404
+        return jsonify({"message": "Course not found"})
+    
+    try:
+        progress = course.mark_module_completed(module_id)
+        return jsonify({"message": "Module marked as completed", "progress": progress}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
-    module = next((mod for mod in course.modules if str(mod.id) == module_id), None)
+
+@api.route('/courses/<course_id>/modules/<module_id>', methods=['POST'])
+@token_required
+def add_material(decoded_payload, course_id, module_id):
+    user_id = decoded_payload['user_id']
+    course = Course.objects(id=course_id, created_by=user_id).first()
+
+    if not course:
+        return jsonify({'message': 'Course not found'}), 404
+    
+    module = next((m for m in course.modules if str(m.id) == module_id), None)
     if not module:
         return jsonify({'message': 'Module not found'}), 404
+
+    title = request.form.get('title')
+    material_type = request.form.get('type')
+    print("Material type received", material_type, 'title received', title) #Debug
+
+    if material_type not in ['note', 'file']:
+        return jsonify({'message': 'Invalid material type'}), 400
     
-
-    assignments = [
-        {
-            'id': str(a.id),
-            'title': a.title,
-            'description': a.description,
-            'created-at': a.created_at,
-            'updated_at': a.updated_at
-        }
-        for a in module.assigments
-    ]
-    return jsonify({"assignments": assignments}),  200
-
-
-@api.route('/modules/<module_id>/assignments/<assignment_id>',
-           methods=['PATCH'])
-@token_required
-def update_assignment(decoded_payload, module_id, assignment_id):
-    data = request.get_json()
-    title = data.get('title')
-    description = data.get('description')
-    status = data.get('status')
-    course = Course.objects(modules__match={"id": module_id}).first()
-    if not course:
-        return jsonify({"message": "course nott found"}), 404
-
-    module = next((mod for mod in course.modules if str(mod.id) == module_id), None)
-    if not module:
-        return jsonify({'message': 'Module not found'}), 404
+    if material_type == 'note':
+        content = request.form.get('content')
+        if not content:
+            return jsonify({'message': 'Note content is required'}), 400
+        
+        material = Material(title=title, type='note', content=content)
+        print("Added material with id", material.id)
     
-    assignment = next((a for a in module.assigments if str(a.id) == assignment_id), None)
-    if not assignment:
-        return jsonify({"message": "Assignment not found"}), 404
+    elif material_type == 'file':
+        if 'file' not in request.files:
+            return jsonify({'message': 'File is required for file materials'})
+        
+        file = request.files['file']
+        if file:
+            upload_folder = Config.UPLOAD_FOLDER
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(upload_folder, filename)
+            file.save(file_path)
 
-    assignment.update(title, description, status)
+            file_url = f"/{filename}"
+            material = Material(title=title, type='file', file_url=file_url)
+        else:
+            return jsonify({'message': 'Invalid file type.'}), 400
+
+    module.materials.append(material)
+    module.updated_at = datetime.datetime.utcnow()
     course.save()
 
-    return jsonify({
-        "message": "Assignment updated successfully",
-        "assignment": {
-            "id": str(assignment.id),
-            "title": assignment.title,
-            "description": assignment.title,
-            "status": assignment.status
-        }
-    }), 200
+    return jsonify({'message': 'Material added successfully'})
 
-
-@api.route('/modules/<module_id>/assignments/<assignments_id>',
-           methods=['DELETE'])
+@api.route('/api/courses/<course_id>/modules/<module_id>/materials/<material_id>', methods=['PUT', 'OPTIONS'])
+@cross_origin(headers=['Authorization'])
 @token_required
-def delete_assignment(decoded_payload, module_id, assignment_id):
-    module = Module.objects(id=module_id).first()
+def update_material(decoded_payload, course_id, module_id, material_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+    user_id = decoded_payload['user_id']
+    course = Course.objects(id=course_id, created_by=user_id).first()
+
+    if not course:
+        return jsonify({'message': 'Course not found'}), 404
+
+    module = next((m for m in course.modules if str(m.id) == module_id), None)
     if not module:
-        return jsonify({"message": "Module not found"}), 404
+        return jsonify({'message': 'Module not found'}), 404
 
-    assignment = next((a for a in module.assignments if str(a.id) == assignment_id), None)
-    if not assignment:
-        return jsonify({"message": "Assignment not found"}), 404
+    material = next((mat for mat in module.materials if str(mat.id) == material_id), None)
+    if not material:
+        return jsonify({'message': 'Material not found'}), 404
 
-    module.assignments = [a for a in module.assignments if str(a.id) != assignment_id]
-    module.save()
+    # Extract fields from request
+    title = request.form.get('title')
+    material_type = request.form.get('type')
+    content = request.form.get('content')
+    file = request.files.get('file')
 
-    return jsonify({"message": "Assigment deleted successfully"}), 200
+    # Validate type
+    if material_type and material_type not in ['note', 'file']:
+        return jsonify({'message': 'Invalid material type'}), 400
+
+    if material_type == 'note' and not content:
+        return jsonify({'message': 'Content is required for note type'}), 400
+
+    if material_type == 'file' and file:
+        upload_folder = Config.UPLOAD_FOLDER
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        file_url = f"{filename}"
+        material.update(title=title, type='file', file_url=file_url)
+    else:
+        material.update(title=title, type=material_type, content=content)
+
+    material.updated_at = datetime.datetime.utcnow()
+    course.save()
+
+    return jsonify({'message': 'Material updated successfully'})
+
+
+@api.route('/uploads/<path:filename>', methods=['GET', 'OPTIONS'])
+@cross_origin(headers=['Authorization'])
+@token_required
+def get_upload(decoded_payload, filename):
+    if request.method == 'OPTIONS':
+        return '', 200
+    upload_folder = Config.UPLOAD_FOLDER
+    safe_path = os.path.join(upload_folder, filename)
+
+    # Ensure the file exists
+    if not os.path.isfile(safe_path):
+        return {"error": "File not found"}, 404
+
+    return send_from_directory(upload_folder, filename)
+
