@@ -1,221 +1,95 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Avatar from "@mui/material/Avatar";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import BookMenuIcon from "@mui/icons-material/MenuBook";
-import { AppProvider } from "@toolpad/core/AppProvider";
-import { DashboardLayout } from "@toolpad/core/DashboardLayout";
-import { useDemoRouter } from "@toolpad/core/internal";
-import logo_dark from "../assets/logo-dark.png";
-import logo_light from "../assets/logo-light.svg";
-import LogoutIcon from "@mui/icons-material/Logout";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import { logoutUser, CoursesApi, DashboardApi } from "../services/api";
+import React, {useState, useEffect} from 'react';
+import { DashboardApi } from '../services/api';
+import { CoursesApi, deleteCourseApi, getOverallProgressApi } from '../services/api';
+import CourseCards from './CourseCards';
 import { useNavigate } from "react-router-dom";
-import { Account } from "@toolpad/core/Account";
-import {
-  AuthenticationContext,
-  SessionContext,
-} from "@toolpad/core/AppProvider";
-import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles"
 
-
-const NAVIGATION = [
-  {
-    segment: "dashboard",
-    title: "Dashboard",
-    icon: <DashboardIcon />,
-  },
-];
-
-
-function DemoPageContent({ pathname }) {
-  return (
-    <Box
-      sx={{
-        py: 4,
-        px: 2,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "left",
-        textAlign: "left",
-      }}
-    >
-      <Typography>{pathname}</Typography>
-    </Box>
-  );
-}
-
-DemoPageContent.propTypes = {
-  pathname: PropTypes.string.isRequired,
-};
-
-function Dashboard(props) {
-  const { children } = props;
-  const router = useDemoRouter("/dashboard");
-  const navigate = useNavigate();
+const Dashboard = () => {
+  const [username, setUsername] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const theme = useTheme();
+  const [overallProgress, setOverallProgress] = useState(0);
 
-
-  const authentication = React.useMemo(() => {
-    return {
-      signIn: () => {
-        // Your existing login logic can go here if needed
-      },
-      signOut: async () => {
-        // logout logic
-      },
-    };
-  }, []);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    (async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await CoursesApi(token); // API call to fetch courses
-        console.log("Courses API Response:", response.data);
-        setCourses(response.data.courses || []); // Assuming response.data contains the courses
-      } catch (error) {
-        console.error("Error fetching courses:", error.message);
-      }
-    })();
-  }, []);
+  
+      const fetchData = async () => {
+        try {
+          //fetch username
+          const token = localStorage.getItem("token");
+          const dashboardResponse = await DashboardApi(token)
+          setUsername(dashboardResponse.data.username);
+  
+          // fetch courses
+          const coursesResponse = await CoursesApi(token);
+          setCourses(coursesResponse.data.courses || []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await DashboardApi(token);
-        const userData = {
-          username: response.data.username,
-          email: response.data.email
+          const progressResponse = await getOverallProgressApi(token);
+          setOverallProgress(progressResponse.data.overall_progress || 0);
+        } catch (error) {
+          console.error("Error fetching dashboard data", error);
         }
-        setUser(userData);
-
-        setSession({
-          user: {
-            name: response.data.username,
-            email: response.data.email
-          },
-        });
-      } catch (error) {
-        console.error("Error fetching user details:", error.message);
-      }
-    })
+      };
+      
+      fetchData();
   }, []);
+  
+  const handleViewDetails = (courseId) => {
+    navigate(`/courses/${courseId}`)
+  };
 
-  const logo = theme.palette.mode === "dark" ? logo_light : logo_dark;
-
-  const Logout = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token Found. Unable to logout");
-        return;
+  const handleRemoveCourse = async (id) => {
+      try {
+        const token = localStorage.getItem("token");
+        await deleteCourseApi(token, id);
+  
+        const coursesResponse = await CoursesApi(token);
+        setCourses(coursesResponse.data.courses || []);
+      } catch (error) {
+        console.error("Error deleting course", error);
       }
-      const response = await logoutUser(token);
-      if (response.status === 200) {
-        localStorage.clear();
-        navigate("/login");
-      } else {
-        console.error("Logout failed:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error logging out", error.message);
-    }
   };
 
   return (
-    <>
-      <AppProvider
-        navigation={[
-          ...NAVIGATION,
-          {
-            segment: "courses",
-            title: "Courses",
-            icon: <BookMenuIcon />,
-            children: courses.map((course, index) => ({
-              segment: `${course.title.replace(/\s+/g, "-")}`,
-              title: course.title,
-              icon: (
-                <Tooltip title={course.title}>
-                  <IconButton color="primary">
-                    <BookMenuIcon />
-                  </IconButton>
-                </Tooltip>
-              ),
-              onClick: () =>
-                router.navigate(
-                  `/courses/${course.title.replace(/\s+/g, "-")}`
-                ),
-            })),
-          },
-          {
-            segment: "logout",
-            title: "Logout",
-            icon: (
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: 3,
-                  width: "50%",
-                  display: "flex",
-                  justifyContent: "left",
-                  alignItems: "center",
-                }}
-              >
-                <Tooltip title="Logout">
-                  <IconButton className="bg-accent" onClick={Logout}>
-                    <LogoutIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            ),
-          },
-        ]}
-        branding={{
-          logo: (
-            <img
-              src={logo}
-              alt="Studysync logo"
-              style={{
-                height: "40px",
-                filter:
-                  theme.palette.mode === "dark"
-                    ? "brightness(0) invert(1)"
-                    : "none",
-              }}
-            />
-          ),
-          title: (
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#A06CD5",
-                fontWeight: "bold",
-              }}
+    <div className="ml-0 md:ml-64 mt-10 p-6 max-w-full">
+      <div className="mb-6 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg shadow-lg p-8">
+        {username && <h1 className="text-3xl font-bold">Welcome back, {username} 👋</h1>}
+        <div className="mt-6">
+          <h2 className="text-lg font-medium">Overall Progress on your studies</h2>
+          <div className="relative mt-4 w-full bg-gray-200 rounded-full h-6">
+            <div
+              className="absolute top-0 left-0 bg-green-400 h-6 rounded-full text-white text-sm font-semibold flex items-center justify-center"
+              style={{ width: `${overallProgress}%` }}
             >
-              STUDYSYNC
-            </Typography>
-          ),
-          homeUrl: "",
-        }}
-        router={router}
-      >
-        <DashboardLayout>
-          <DemoPageContent pathname={router.pathname} />
-          {children}
-        </DashboardLayout>
-      </AppProvider>
-    </>
+              {overallProgress.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Your Courses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl-grid-cols-4 gap-4">
+          {courses.length > 0 ? (
+            courses.map((course, index) => (
+              <CourseCards
+                key={index}
+                title={course.title}
+                description={course.description}
+                progress={course.progress}
+                courseId={course.id}
+                handleViewDetails={handleViewDetails}
+                handleRemoveCourse={handleRemoveCourse}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500">
+              No courses available. Start exploring!
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
-
-export default Dashboard;
+export default Dashboard

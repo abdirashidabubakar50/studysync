@@ -6,6 +6,9 @@ import MainLayout from './layouts/MainLayout';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import CoursePage from './pages/CoursePage';
+import CourseDetails from './pages/CourseDetails';
+import ModuleDetails from './pages/ModuleDetails';
+import LandingPage from './pages/LandingPage';
 
 
 const router = createBrowserRouter(
@@ -15,7 +18,10 @@ const router = createBrowserRouter(
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/course/:course_id" element={<CoursePage />} />
+        <Route path='/courses' element={<CoursePage />} />
+        <Route path="/courses/:courseId" element={<CourseDetails />} />
+        <Route path="/courses/:courseId/modules/:moduleId" element={<ModuleDetails />} />
+        <Route path='/' element={<LandingPage />} />
       </Route>
     </>
   )
