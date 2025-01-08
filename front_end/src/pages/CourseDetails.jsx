@@ -37,7 +37,12 @@ const CourseDetails = () => {
     }, [courseId]);
 
     if (!CourseDetails) {
-        return <p>Loading course details...</p>
+      return (
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="loader"></div>
+          <p className="ml-4 text-gray-600 text-lg">Loading course details...</p>
+        </div>
+      );
     }
 
     const handleAddModule = async (e) => {
@@ -67,7 +72,7 @@ const CourseDetails = () => {
 
   return (
     <MainLayout>
-      <div className="ml-0 md:ml-64 mt-16 p-6 max-w-full">
+      <div className="ml-0 md:ml-64 mt-16 p-6 min-h-screen">
         <h2 className="text-2xl font-bold">{CourseDetails.title}</h2>
         <p className="text-gray-600 mt-2">{CourseDetails.description}</p>
         <Link
