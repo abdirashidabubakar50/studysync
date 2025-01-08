@@ -29,7 +29,7 @@ export const logoutUser = async (token) => {
 };
 
 export const DashboardApi = async(token) => {
-    return axios.get(`${API_URL}/api/dashboard`, {
+    return axios.get(`${API_URL}api/dashboard`, {
         headers: {
             Authorization: `bearer ${token}`,
         }
@@ -98,23 +98,27 @@ export const markModuleComplete = async (token, courseId, moduleId) => {
     );
 };
 
-export const addAssignment = async (token, module_id) => {
-    return axios.post(`${API_URL}modules/${module_id}}/assignments`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-};
 
 export const AddMaterialApi = async (token, courseId, moduleId, formData) => {
-    return axios.post(`${API_URL}/api/courses/${courseId}/modules/${moduleId}`,
-        formData,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data'
-            },
-        },
-    );
+    try {
+        const response = await axios.post(
+            `${API_URL}api/courses/${courseId}/modules/${moduleId}/material`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        console.log('API Response:', response); // Log response here
+        return response;
+    } catch (error) {
+        console.error('Error in AddMaterialApi:', error);
+        throw error; // rethrow to handle it in the caller
+    }
 };
+
 
 
 export const updateMaterialApi = async (token, courseId, moduleId, materialId, formData) => {
@@ -157,3 +161,38 @@ export const viewFile = async (fileUrl, token) => {
         throw error;
     }
 };
+
+
+export const getAssignmentsApi = async (token) => {
+    return axios.get(`${API_URL}api/assignments`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
+
+export const addAssignmentApi = async (token, assignmentData) => {
+    return axios.post(`${API_URL}api/assignments/add`, assignmentData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+}
+
+export const deleteAssignmentApi = async (token, assignmentId) => {
+    return axios.delete(`${API_URL}api/assignments/${assignmentId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
+
+
+export const markAssignmentCompleteApi = async (token, assignmentId) => {
+    return axios.patch(`${API_URL}api/assignments/${assignmentId}/complete`, {}, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+}
