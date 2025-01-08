@@ -8,6 +8,7 @@ from app.models.material import Material
 import os
 from werkzeug.utils import secure_filename
 import datetime
+from datetime import datetime
 from app.config import Config
 from flask_cors import cross_origin
 
@@ -273,7 +274,7 @@ def delete_module(decoded_payload, course_id, module_id):
 def mark_module_completed(decoded_payload, course_id, module_id):
     if request.method == 'OPTIONS':
         response = jsonify({'message': 'CORS preflight successful'})
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5174/')
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173/')
         response.headers.add('Access-Control-Allow-Methods', 'OPTIONS, POST')
         response.headers.add('Access-Control-Allow-Headers', 'Authorization, Content-Type')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
@@ -290,7 +291,7 @@ def mark_module_completed(decoded_payload, course_id, module_id):
         return jsonify({"error": str(e)}), 400
 
 
-@api.route('/courses/<course_id>/modules/<module_id>', methods=['POST'])
+@api.route('/courses/<course_id>/modules/<module_id>/material', methods=['POST'])
 @token_required
 def add_material(decoded_payload, course_id, module_id):
     user_id = decoded_payload['user_id']
@@ -335,17 +336,29 @@ def add_material(decoded_payload, course_id, module_id):
             return jsonify({'message': 'Invalid file type.'}), 400
 
     module.materials.append(material)
-    module.updated_at = datetime.datetime.utcnow()
+
     course.save()
 
-    return jsonify({'message': 'Material added successfully'})
+    return jsonify({
+        'id': str(material.id),
+        'type': material.type,
+        'title': material.title,
+        'content': material.content if material.type == 'note' else None,
+        'file_url': material.file_url if material.type == 'file' else None
+    }), 200
+
 
 @api.route('/api/courses/<course_id>/modules/<module_id>/materials/<material_id>', methods=['PUT', 'OPTIONS'])
 @cross_origin(headers=['Authorization'])
 @token_required
 def update_material(decoded_payload, course_id, module_id, material_id):
     if request.method == 'OPTIONS':
-        return '', 200
+        response = jsonify({'message': 'CORS preflight successful'})
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173/')
+        response.headers.add('Access-Control-Allow-Methods', 'OPTIONS, POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response, 200
     user_id = decoded_payload['user_id']
     course = Course.objects(id=course_id, created_by=user_id).first()
 
@@ -405,3 +418,144 @@ def get_upload(decoded_payload, filename):
 
     return send_from_directory(upload_folder, filename)
 
+""" Assignments routes"""
+@api.route('/assignments/add', methods=['POST'])
+@token_required
+def add_assignment(decoded_payload):
+    user_id = decoded_payload['user_id']
+    data = request.get_json()
+
+    title = data.get('title')
+    description = data.get('description')
+    due_date = data.get('due_date')
+    status = data.get('status', 'pending')
+    tags = data.get('tags', [])
+
+    if not title:
+        return jsonify({"error": "Title is required"}), 400
+    
+    if not isinstance(due_date, str):
+        return jsonify({'error': "Due date must be in a valid ISO 8601 format"}), 400
+
+    try:
+        due_date = datetime.fromisoformat(due_date)
+    except ValueError:
+        return jsonify({"error": "Due date must be in valid ISO 8601 format"}), 400
+    
+    user = User.objects(id=user_id).first()
+
+    if not user:
+        return jsonify({"error": "Current user not found"})
+    
+    # create new assignment
+    assignment = Assignment(
+        title=title,
+        description=description,
+        created_by=user,
+        status=status,
+        due_date=due_date,
+        tags=tags
+    )
+
+    assignment.save()
+
+    return jsonify({
+        "message": "Assignment created successfully",
+        "assignment": {
+            "id": str(assignment.id),
+            "title": assignment.title,
+            "description": assignment.description,
+            "status": assignment.status,
+            "due_date": assignment.due_date.strftime('%Y-%m-%d'),
+            "tags": assignment.tags,
+            "created_at": assignment.created_at.isoformat(),
+            "updated_at": assignment.updated_at.isoformat()
+        }
+    }), 201
+
+
+@api.route('/assignments', methods=['GET'])
+@token_required
+def get_assignments(decoded_payload):
+    user_id = decoded_payload['user_id']
+
+    # Fetch all assignments created by the authenticated user
+    assignments = Assignment.objects(created_by=user_id)
+
+    # Prepare the response
+    response = [
+        {
+            "id": str(assignment.id),
+            "title": assignment.title,
+            "description": assignment.description,
+            "status": assignment.status,
+            "due_date": assignment.due_date.isoformat() if assignment.due_date else None,
+            "tags": assignment.tags,
+            "created_at": assignment.created_at.isoformat(),
+            "updated_at": assignment.updated_at.isoformat()
+        }
+        for assignment in assignments
+    ]
+
+    return jsonify({"assignments": response}), 200
+
+
+@api.route('/assignments/<assignment_id>', methods=['PUT'])
+@token_required
+def update_assignment(decoded_payload, assignment_id):
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+    assignment = Assignment.objects(id=assignment_id, created_by=user).first()
+
+    if not assignment:
+        return jsonify({"error": 'assignment not found'})
+    
+    data = request.get_json()
+
+    title = data.get('title')
+    description= data.get('description')
+    status = data.get('status')
+    due_date = data.get('due_date')
+    tags = data.get('tags')
+
+    assignment.update(title=title, description=description, status=status, due_date=due_date, tags=tags)
+    assignment.save()
+
+    return jsonify({
+        "id": str(assignment.id),
+        "title": assignment.title,
+        "description": assignment.description,
+        "due_date": assignment.due_date,
+        "status": assignment.status,
+        "tags": assignment.tags,
+        "created_at": assignment.created_at,
+        "updated_at": assignment.updated_at
+    }), 200
+
+
+@api.route('/assignments/<assignment_id>', methods=['DELETE'])
+@token_required
+def delete_assignment(decoded_payload, assignment_id):
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+
+    assignment = Assignment.objects(id=assignment_id, created_by=user).first()
+
+    if not assignment:
+        return jsonify({"error": "Assignment not found"}), 400
+    
+    assignment.delete()
+
+    return jsonify({"message": "Assignment deleted successfully"}), 200
+
+@api.route('/assignments/<assignment_id>/complete', methods=['PATCH'])
+@token_required
+def mark_assignment_complete(decoded_payload, assignment_id):
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+    assignment = Assignment.objects(id=assignment_id, created_by=user).first()
+
+    assignment.status = 'completed'
+    assignment.save()
+
+    return jsonify({"messge": 'Marked assignment as completed'})
