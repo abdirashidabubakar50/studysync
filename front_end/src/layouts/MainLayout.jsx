@@ -7,7 +7,7 @@ const MainLayout = ({children}) => {
     <div>
       <SideBar />
       <RightNavBar />
-      <div className='bg-slate-300 mt-16'>
+      <div>
         {children}
 
       </div>
