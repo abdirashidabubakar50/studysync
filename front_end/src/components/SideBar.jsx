@@ -110,7 +110,7 @@ const SideBar = () => {
         <div className="p-4 border-t border-gray-700">
           <Link
           >
-            <button onClick={Logout} className="w-full bg-accent hover:bg-neutral text-white py-2 rounded-full">
+            <button onClick={Logout} className="w-full bg-white  text-secondary py-2 rounded-full">
               Logout
             </button>
           </Link>
