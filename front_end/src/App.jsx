@@ -9,6 +9,7 @@ import CoursePage from './pages/CoursePage';
 import CourseDetails from './pages/CourseDetails';
 import ModuleDetails from './pages/ModuleDetails';
 import LandingPage from './pages/LandingPage';
+import Assignments from './components/Assignments';
 
 
 const router = createBrowserRouter(
@@ -22,6 +23,7 @@ const router = createBrowserRouter(
         <Route path="/courses/:courseId" element={<CourseDetails />} />
         <Route path="/courses/:courseId/modules/:moduleId" element={<ModuleDetails />} />
         <Route path='/' element={<LandingPage />} />
+        <Route path='/assignments' element={<Assignments />} />
       </Route>
     </>
   )
