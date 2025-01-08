@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { PencilIcon } from 'lucide-react';
 import { FaCheckDouble } from "react-icons/fa6";
 import { formatTextToMarkdown } from '../services/ToMarkDown';
-import { handleViewFile } from '../services/ViewFIle';
+import { handleViewFile } from '../services/ViewFile';
 import MainLayout from '../layouts/MainLayout';
 
 
