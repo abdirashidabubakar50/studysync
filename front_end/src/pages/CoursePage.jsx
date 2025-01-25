@@ -76,7 +76,7 @@ const CoursePage = () => {
 
   return (
     <MainLayout>
-      <div className="ml-0 md:ml-64  p-6 max-w-full flex-grow min-h-screen">
+      <div className="ml-0 md:ml-64  mt-16 p-6 max-w-full flex-grow min-h-screen">
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4">Your Courses</h2>
           <Link
