@@ -2,7 +2,6 @@ from app.extensions import db
 import datetime
 from app.models.module import Module
 from app.models.user import User
-from app.models.assignment import Assignment
 
 
 class Course(db.Document):
