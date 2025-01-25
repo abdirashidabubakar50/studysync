@@ -11,19 +11,19 @@ const Hero = () => {
                 {/* Text Content */}
                 <div className="text-center md:text-left md:w-1/2 space-y-6 animate__animated animate__fadeInLeft">
                     <h1 className="text-4xl md:text-6xl font-bold text-[#6247AA] leading-tight">
-                        Unlock Your Potential with <span className="text-[#A06CD5]">StudySprint</span>
+                        Unlock Your Potential with <span className="text-[#A06CD5]">StudySync</span>
                     </h1>
                     <p className="text-gray-600 md:text-lg">
                         Discover tools, resources, and personalized support to achieve academic excellence.
                     </p>
                     <div className="flex justify-center md:justify-start gap-4">
                       <button className="bg-[#A06CD5] hover:bg-[#6247AA] text-white font-medium py-2 px-6 rounded-md transition duration-300">
-                          <a href="/login">Get Started</a>
+                          <a href="/register">Get Started</a>
                         </button>
-                      <button className="bg-[#102B3F] hover:bg-[#062726] text-white font-medium py-2 px-6 rounded-md transition duration-300">
+                      {/* <button className="bg-[#102B3F] hover:bg-[#062726] text-white font-medium py-2 px-6 rounded-md transition duration-300">
                           <a href="/login"></a>
                             Learn More
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 

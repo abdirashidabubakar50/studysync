@@ -2,7 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { DashboardApi } from '../services/api';
 import { CoursesApi, deleteCourseApi, getOverallProgressApi } from '../services/api';
 import CourseCards from './CourseCards';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { BookOpenIcon } from 'lucide-react';
 
 const Dashboard = () => {
   const [username, setUsername] = useState(null);
@@ -51,7 +52,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="ml-0 md:ml-64 mt-10 p-6 max-w-full">
+    <div className="ml-0 md:ml-64 mt-16 p-6 max-w-full">
       <div className="mb-6 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg shadow-lg p-8">
         {username && <h1 className="text-3xl font-bold">Welcome back, {username} 👋</h1>}
         <div className="mt-6">
@@ -82,8 +83,15 @@ const Dashboard = () => {
               />
             ))
           ) : (
-            <p className="text-gray-500">
-              No courses available. Start exploring!
+            <p className="text-black">
+                No courses added yet. Add Course to start!
+                <Link
+                to="/courses"
+                className="flex itemc-center px-4 py-2 hover:bg-gray-400 rounded-full"
+              >
+                <BookOpenIcon className="w-5 h-5 mr-3" />
+                Courses
+              </Link>
             </p>
           )}
         </div>

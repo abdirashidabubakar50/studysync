@@ -10,16 +10,16 @@ const Navbar = () => {
         {/* Left Section: Logo */}
         <div className="flex items-center space-x-3">
           <img src={logo_dark} alt="StudySync Logo" className="h-12 w-12" />
-          <h1 className="text-xl font-bold text-gray-800">StudySprint</h1>
+          <h1 className="text-xl font-bold text-gray-800">StudySync</h1>
         </div>
 
         {/* Right Section: Navigation Buttons */}
         <div className="flex items-center space-x-6">
           <button className="px-5 py-2 text-sm font-medium text-gray-800 bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 hover:shadow-md transition duration-200">
-            Sign Up
+            <a href="/register">SignUp</a>
           </button>
           <button className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full hover:shadow-md hover:from-purple-600 hover:to-indigo-600 transition duration-200">
-            Login
+            <a href="/login">Login</a>
           </button>
         </div>
       </nav>

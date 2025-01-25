@@ -15,12 +15,10 @@ const AboutUs = () => {
                     </div>
                     <div className="md:w-1/2 space-y-4">
                         <p className="text-lg md:text-xl">
-                            StudySprint was founded by a group of passionate educators and tech enthusiasts who wanted to
-                            revolutionize the way students approach learning.
+                            StudySync is a personal project developed as part of the final project for the ALX program, inspired by a passion for advancing education and learning.
                         </p>
                         <p className="text-lg md:text-xl">
-                            Our team is dedicated to providing the best possible resources and personalized tools for students
-                            around the world.
+                            The goal of this project is to provide innovative resources and personalized tools to support students in their educational journey.
                         </p>
                     </div>
                 </div>

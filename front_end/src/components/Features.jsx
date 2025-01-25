@@ -14,19 +14,25 @@ const Features = () => {
           <div className="bg-gradient-to-r from-[#A06CD5] to-[#6247AA] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
             <FaRocket className="text-5xl mb-4" />
             <h3 className="text-xl font-semibold mb-4">Accelerate Learning</h3>
-            <p>Fast-track your academic progress with personalized resources and interactive tools.</p>
+            <p>Fast-track your academic progress</p>
           </div>
           {/* Feature 2 */}
           <div className="bg-gradient-to-l from-[#102B3F] to-[#062726] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
             <FaChalkboardTeacher className="text-5xl mb-4" />
-            <h3 className="text-xl font-semibold mb-4">Expert Guidance</h3>
-            <p>Learn from the best! Our expert instructors provide step-by-step guidance.</p>
+            <h3 className="text-xl font-semibold mb-4">Assignment Tracking</h3>
+            <p>Track all your assignments in one place</p>
           </div>
           {/* Feature 3 */}
           <div className="bg-gradient-to-r from-[#062726] to-[#A06CD5] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
             <FaLaptop className="text-5xl mb-4" />
             <h3 className="text-xl font-semibold mb-4">Online Accessibility</h3>
-            <p>Access study materials and tools from anywhere, on any device.</p>
+            <p>Access Your study materials and tools from anywhere, on any device.</p>
+            </div>
+            {/* Feature 3 */}
+          <div className="bg-gradient-to-r from-[#062726] to-[#A06CD5] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
+            <FaLaptop className="text-5xl mb-4" />
+            <h3 className="text-xl font-semibold mb-4">Get timely Notifications on all of your assignments</h3>
+            <p>Get Notified on all your due assignment and activities on the platform</p>
           </div>
         </div>
       </div>

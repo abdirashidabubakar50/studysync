@@ -118,9 +118,6 @@ const Assignments = () => {
                             >
                                 <div className="flex-1">
                                     <h3 className="text-lg font-normal text-gray-800">{assignment.title}</h3>
-                                    <p className="text-sm text-gray-500">
-                                        Due: {assignment.due_date}
-                                    </p>
                                 </div>
                                 <div className="flex items-center mt-2 sm:mt-0 space-x-4">
                                     <span

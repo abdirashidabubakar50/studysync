@@ -76,33 +76,6 @@ const SideBar = () => {
                 Assignments
               </Link>
             </li>
-            <li>
-              <Link
-                to="/progress"
-                className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-              >
-                <ChartBarIcon className="w-5 h-5 mr-3" />
-                Progress
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/rewards"
-                className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-              >
-                <BellIcon className="w-5 h-5 mr-3" />
-                Notifications
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/rewards"
-                className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-              >
-                <GiftIcon className="w-5 h-5 mr-3" />
-                Rewards
-              </Link>
-            </li>
           </ul>
         </nav>
 
@@ -147,27 +120,7 @@ const SideBar = () => {
               <ClipboardListIcon className="w-5 h-5 mr-3" />
               Assignments
             </Link>
-            <Link
-              to="/progress"
-              className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-            >
-              <ChartBarIcon className="w-5 h-5 mr-3" />
-              Progress
-            </Link>
-            <Link
-              to="/rewards"
-              className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-            >
-              <BellIcon className="w-5 h-5 mr-3" />
-              Notifications
-            </Link>
-            <Link
-              to="/rewards"
-              className="flex items-center px-4 py-2 hover:bg-accent rounded-full"
-            >
-              <GiftIcon className="w-5 h-5 mr-3" />
-              Rewards
-            </Link>
+            
             <Link
               to="/rewards"
               className="flex items-center px-4 py-2 hover:bg-accent rounded-full"

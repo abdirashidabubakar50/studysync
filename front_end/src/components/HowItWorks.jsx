@@ -15,13 +15,18 @@ const HowItWorks = () => {
                     </div>
                     {/* Step 2 */}
                     <div className="bg-[#102B3F] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
-                        <h3 className="text-2xl font-semibold mb-4">Step 2: Choose Your Resources</h3>
-                        <p>Pick from a variety of learning resources that best suit your needs.</p>
+                        <h3 className="text-2xl font-semibold mb-4">Step 2: Add Your Courses</h3>
+                        <p>Add Your courses and kick start Your journey.</p>
                     </div>
                     {/* Step 3 */}
                     <div className="bg-gradient-to-l from-[#062726] to-[#A06CD5] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
                         <h3 className="text-2xl font-semibold mb-4">Step 3: Start Learning</h3>
-                        <p>Start your learning journey with personalized guidance and tools.</p>
+                        <p>Start your learning journey by adding modules and materials for your courses.</p>
+                    </div>
+                    {/* Step 3 */}
+                    <div className="bg-gradient-to-l from-[#062726] to-[#A06CD5] text-white p-8 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300">
+                        <h3 className="text-2xl font-semibold mb-4">Step 4: Add and track all of your assignments</h3>
+                        <p>Add your assignments and be able to track them and get notified about upcoming assignments.</p>
                     </div>
                 </div>
             </div>
