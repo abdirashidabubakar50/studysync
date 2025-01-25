@@ -1,5 +1,4 @@
 from app.extensions import db
-from app.models.assignment import Assignment
 from app.models.material import Material
 import datetime
 import uuid
