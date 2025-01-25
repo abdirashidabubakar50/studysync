@@ -23,7 +23,7 @@ StudySync is a full-stack course management platform that allows students to man
 ## Tech Stack
 
 - **Backend:** Flask (Python)
-- **Frontend:** React, Tailwind CSS, Material UI
+- **Frontend:** React, Tailwind CSS, Javascript
 - **Database:** MongoDB
 - **Authentication:** JWT
 
@@ -70,18 +70,20 @@ StudySync is a full-stack course management platform that allows students to man
 
 2. Start the React app:
     ```bash
-    npm start
+    npm run dev
     ```
 
 ### Running the Application
 
-Once both the frontend and backend are running, navigate to `http://localhost:3000` to view the application. You can register, log in, and start managing your courses.
+Once both the frontend and backend are running, navigate to `http://localhost:5173` to view the application. You can register, log in, and start managing your courses.
 
 ## Usage
 
 - **Register** a new account or **log in** to your existing account.
 - **Add courses** and start building your learning journey.
-- **Track your progress** and **earn rewards** as you complete tasks and maintain streaks.
+- **Add modules** add modules and the study materials for your courses.. files can be uploaded
+- **Track your progress** and  as you complete tasks
+  **Add  Your assignments** and get notified on your due assignments timely
 
 ## API Endpoints
 
