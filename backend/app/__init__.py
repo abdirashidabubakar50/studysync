@@ -21,11 +21,13 @@ def create_app():
             description = 'A all in one learning platform to manage all of your learning resources'
     )
 
-    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)    # Register blueprints
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
+
     from app.routes.auth_routes import auth
     from app.routes.routes import api
 #     from app.routes.Materials import api
 #     from app.routes.Modules import api
+
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(api, url_prefix='/api')
 
