@@ -5,6 +5,7 @@ from app.models.course import Course
 from app.models.assignment import Assignment
 from app.models.module import Module
 from app.models.material import Material
+from app.models.notifications import Notification
 import os
 from werkzeug.utils import secure_filename
 import datetime
@@ -20,8 +21,7 @@ def home():
     return jsonify({'message': 'Welcome to studysync'})
 
 
-
-@api.route('/profile/user_id', methods=['GET'])
+@api.route('/profile', methods=['POST'])
 @token_required
 def update_profile(decoded_payload):
     """ update the user profile """
@@ -31,18 +31,24 @@ def update_profile(decoded_payload):
         return jsonify({"message": 'User not found'}), 404
     
     data = request.get_json()
-
+    if not data:
+        return jsonify({"message": "Invalid JSON payload"}), 400
     username = data.get('username')
     email = data.get('email')
 
+    if not username or not email:
+        return jsonify({"message": "Username and email are required"}), 400
 
-    user.update(username=username, email=email)
-    user.save()
+    try:
+        user.update(username=username, email=email)
+        user.save()
 
-    return jsonify({
-        'username': user.username,
-        'email': user.email,
-    });
+        return jsonify({
+            'username': user.username,
+            'email': user.email,
+        }), 200
+    except Exception as e:
+        return jsonify({"message": "Failed to update profile", "error": str(e)}), 500
 
 
 
@@ -54,7 +60,8 @@ def dashboard(decoded_payload):
     return jsonify({
         'message': 'Welcome to the dashboard',
         'username': user.username,
-        'email': user.email
+        'email': user.email,
+        'id': str(user.id)
     }), 200
 
 
@@ -559,3 +566,33 @@ def mark_assignment_complete(decoded_payload, assignment_id):
     assignment.save()
 
     return jsonify({"messge": 'Marked assignment as completed'})
+
+
+@api.route('/unread', methods=['GET'])
+@token_required
+def get_unread_notifications(decoded_payload):
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+
+    notifications = Notification.objects(user=user, read=False).order_by("-created_at")
+
+    return jsonify([{
+        "id": str(notification.id),
+        "message": notification.message,
+        "type": notification.type,
+        "created_at": notification.created_at
+    } for notification in notifications])
+
+@api.route('<notification_id>/read', methods=['PATCH'])
+@token_required
+def mark_as_read(decoded_payload, notification_id):
+    user_id = decoded_payload['user_id']
+    user = User.objects(id=user_id).first()
+    notification = Notification.objects(id=notification_id, user=user).first()
+
+    if not notification:
+        return jsonify({"error": "Notifications Not found"}), 404
+    
+    notification.read = True
+    notification.save()
+    return jsonify({"message": "Notification marked as read"}), 200
