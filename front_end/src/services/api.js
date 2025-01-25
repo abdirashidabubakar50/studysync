@@ -36,6 +36,19 @@ export const DashboardApi = async(token) => {
     });
 }
 
+export const updateProfileApi = async (token, formData) => {
+    return axios.post(
+        `${API_URL}api/profile`,
+        JSON.stringify(formData),
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        }
+    );
+};
+
 
 export const CoursesApi = async (token) => {
     return await axios.get(`${API_URL}api/courses`, {
@@ -196,3 +209,20 @@ export const markAssignmentCompleteApi = async (token, assignmentId) => {
         }
     })
 }
+
+
+export const UnreadNotificationsApi = async (token) => {
+    return axios.get(`${API_URL}api/unread`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const markNotificationsReadApi = async (token, notificationId) => {
+    return axios.patch(`${API_URL}api/${notificationId}/read`, {}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
