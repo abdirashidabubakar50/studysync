@@ -10,6 +10,7 @@ import CourseDetails from './pages/CourseDetails';
 import ModuleDetails from './pages/ModuleDetails';
 import LandingPage from './pages/LandingPage';
 import Assignments from './components/Assignments';
+import Notifications from './components/Notifications';
 
 
 const router = createBrowserRouter(
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
         <Route path="/courses/:courseId/modules/:moduleId" element={<ModuleDetails />} />
         <Route path='/' element={<LandingPage />} />
         <Route path='/assignments' element={<Assignments />} />
+        <Route path='/notifications' element={<Notifications />} />
       </Route>
     </>
   )
